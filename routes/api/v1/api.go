@@ -336,6 +336,7 @@ func RegisterRoutes(m *macaron.Macaron) {
 						Delete(admin.DeleteUser)
 					m.Post("/keys", bind(api.CreateKeyOption{}), admin.CreatePublicKey)
 					m.Post("/orgs", bind(api.CreateOrgOption{}), admin.CreateOrg)
+					m.Delete("/orgs/:name", admin.DeleteOrg)
 					m.Post("/repos", bind(api.CreateRepoOption{}), admin.CreateRepo)
 				})
 			})

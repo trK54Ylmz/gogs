@@ -42,3 +42,19 @@ func CreateOrg(c *context.APIContext, form api.CreateOrgOption) {
 
 	c.JSON(201, convert.ToOrganization(org))
 }
+
+func DeleteOrg(c *context.APIContext) {
+	u, err := models.GetOrgByName(c.Params(":name"))
+	if err != nil {
+		c.Error(500, "GetOrgByName", err)
+		return
+	}
+
+	err = models.DeleteOrganization(u)
+	if err != nil {
+		c.Error(500, "DeleteOrganization", err)
+		return
+	}
+
+	c.Status(204)
+}
