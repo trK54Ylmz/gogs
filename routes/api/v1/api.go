@@ -319,7 +319,7 @@ func RegisterRoutes(m *macaron.Macaron) {
 		m.Get("/user/orgs", reqToken(), org.ListMyOrgs)
 		m.Get("/users/:username/orgs", org.ListUserOrgs)
 		m.Group("/orgs/:orgname", func() {
-			m.Combo("").Get(org.Get).Patch(bind(api.EditOrgOption{}), org.Edit)
+			m.Combo("").Get(org.Get).Patch(bind(api.EditOrgOption{}), org.Edit).Delete(admin.DeleteOrg)
 			m.Combo("/teams").Get(org.ListTeams)
 		}, orgAssignment(true))
 
