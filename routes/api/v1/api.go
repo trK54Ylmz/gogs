@@ -315,6 +315,8 @@ func RegisterRoutes(m *macaron.Macaron) {
 
 		m.Get("/issues", reqToken(), repo.ListUserIssues)
 
+		m.Get("/diff/:owner/:repo/:sha", repo.GetDiff)
+
 		// Organizations
 		m.Get("/user/orgs", reqToken(), org.ListMyOrgs)
 		m.Get("/users/:username/orgs", org.ListUserOrgs)
