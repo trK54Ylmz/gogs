@@ -7,9 +7,8 @@ import (
 )
 
 func GetDiff(c *context.APIContext) {
-
-	var userName = c.Params(":owner")
-	var repoName = c.Params(":repo")
+	var userName = c.Params(":username")
+	var repoName = c.Params(":reponame")
 	var commitId = c.Params(":sha")
 
 	diff, err := models.GetDiffCommit(models.RepoPath(userName, repoName),
