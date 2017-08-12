@@ -10,6 +10,7 @@ import (
 	log "gopkg.in/clog.v1"
 
 	api "github.com/gogits/go-gogs-client"
+	"github.com/gogits/git-module"
 
 	"github.com/gogits/gogs/models"
 	"github.com/gogits/gogs/models/errors"
@@ -17,6 +18,10 @@ import (
 	"github.com/gogits/gogs/pkg/form"
 	"github.com/gogits/gogs/pkg/setting"
 	"github.com/gogits/gogs/routes/api/v1/convert"
+	"github.com/gogits/gogs/pkg/markup"
+	"bytes"
+	"github.com/gogits/gogs/pkg/tool"
+	"io/ioutil"
 )
 
 // https://github.com/gogits/go-gogs-client/wiki/Repositories#search-repositories
@@ -383,4 +388,125 @@ func MirrorSync(c *context.APIContext) {
 
 	go models.MirrorQueue.Add(repo.ID)
 	c.Status(202)
+}
+
+func GetTree(c *context.APIContext) {
+	userName := c.Params(":username")
+	repoName := c.Params(":reponame")
+
+	treePath := c.Query("path")
+
+	user, err := models.GetUserByName(userName)
+	if err != nil {
+		c.Error(500, "GetUserByName", err)
+		return
+	}
+
+	repo, err := models.GetRepositoryByName(user.ID, repoName)
+	if err != nil {
+		c.Error(500, "GetRepositoryByName", err)
+		return
+	}
+
+	branch, err := repo.GetBranch("master")
+	if err != nil {
+		c.Error(500, "GetBranch", err)
+		return
+	}
+
+	commit, err := branch.GetCommit()
+	if err != nil {
+		c.Error(500, "GetCommit", err)
+		return
+	}
+
+	tree, err := commit.SubTree(treePath)
+	if err != nil {
+		c.Error(500, "SubTree", err)
+		return
+	}
+
+	entries, err := tree.ListEntries()
+	if err != nil {
+		c.Error(500, "ListEntries", err)
+		return
+	}
+	entries.Sort()
+
+	url := repo.Link() + "/src/" + branch.Name
+	model := models.Tree{}
+
+	var readmeFile *git.Blob
+	for _, entry := range entries {
+		file := models.TreeFile{}
+
+		file.Name = entry.Name()
+		file.LastCommitId = entry.ID.String()
+		file.IsDir = entry.IsDir()
+		file.Size = entry.Size()
+
+		model.Files = append(model.Files, file)
+
+		if entry.IsDir() || !markup.IsReadmeFile(entry.Name()) {
+			continue
+		}
+
+		readmeFile = entry.Blob()
+		break
+	}
+
+	// read content of readme file if readme exists
+	if readmeFile != nil {
+		dataRc, err := readmeFile.Data()
+		if err != nil {
+			c.Error(500, "readmeFile.Data", err)
+			return
+		}
+
+		buf := make([]byte, 1024)
+		n, _ := dataRc.Read(buf)
+		buf = buf[:n]
+
+		isTextFile := tool.IsTextFile(buf)
+
+		if isTextFile {
+			d, _ := ioutil.ReadAll(dataRc)
+			buf = append(buf, d...)
+
+			switch markup.Detect(readmeFile.Name()) {
+			case markup.MARKDOWN:
+				isTextFile = false
+				buf = markup.Markdown(buf, url, c.Repo.Repository.ComposeMetas())
+			case markup.ORG_MODE:
+				isTextFile = false
+				buf = markup.OrgMode(buf, url, c.Repo.Repository.ComposeMetas())
+			case markup.IPYTHON_NOTEBOOK:
+				isTextFile = false
+				c.Data["RawFileLink"] = c.Repo.RepoLink + "/raw/" + path.Join(c.Repo.BranchName, c.Repo.TreePath, readmeFile.Name())
+			default:
+				buf = bytes.Replace(buf, []byte("\n"), []byte(`<br>`), -1)
+			}
+
+			model.Readme = string(buf)
+		}
+
+		model.IsReadmeText = isTextFile
+		model.ReadmeName = readmeFile.Name()
+	}
+
+	// Show latest commit info of repository in table header,
+	// or of directory if not in root directory.
+	latestCommit := commit
+	if len(treePath) > 0 {
+		latestCommit, err = commit.GetCommitByPath(c.Repo.TreePath)
+		if err != nil {
+			c.ServerError("GetCommitByPath", err)
+			return
+		}
+	}
+
+	model.LastCommitId = latestCommit.ID.String()
+	model.LastCommitMsg = latestCommit.CommitMessage
+
+	c.JSON(202, &model)
 }
