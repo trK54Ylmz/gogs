@@ -10,6 +10,7 @@ import (
 	"github.com/gogits/gogs/pkg/context"
 	"github.com/gogits/gogs/routes/api/v1/user"
 	"github.com/gogits/gogs/routes/api/v1/org"
+	"github.com/gogits/gogs/models"
 )
 
 // https://github.com/gogits/go-gogs-client/wiki/Administration-Organizations#create-a-new-organization
