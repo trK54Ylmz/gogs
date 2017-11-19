@@ -23,7 +23,7 @@ import (
 	log "gopkg.in/clog.v1"
 	"gopkg.in/ini.v1"
 
-	git "github.com/gogits/git-module"
+	"github.com/gogits/git-module"
 	api "github.com/gogits/go-gogs-client"
 
 	"github.com/gogits/gogs/models/errors"
@@ -2336,6 +2336,22 @@ func ForkRepository(doer, owner *User, baseRepo *Repository, name, desc string) 
 func (repo *Repository) GetForks() ([]*Repository, error) {
 	forks := make([]*Repository, 0, repo.NumForks)
 	return forks, x.Find(&forks, &Repository{ForkID: repo.ID})
+}
+
+type TreeFile struct {
+	Name         string `json:"name"`
+	LastCommitId string `json:"commit_id"`
+	IsDir        bool `json:"is_dir"`
+	Size         int64 `json:"size"`
+}
+
+type Tree struct {
+	LastCommitId  string `json:"last_commit_id"`
+	LastCommitMsg string `json:"last_commit_msg"`
+	Files         []TreeFile `json:"files"`
+	Readme        string `json:"readme"`
+	ReadmeName    string `json:"readme_name"`
+	IsReadmeText  bool `json:"is_readme_text"`
 }
 
 // __________                             .__

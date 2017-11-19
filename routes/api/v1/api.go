@@ -259,7 +259,9 @@ func RegisterRoutes(m *macaron.Macaron) {
 				})
 				m.Get("/raw/*", context.RepoRef(), repo.GetRawFile)
 				m.Get("/archive/*", repo.GetArchive)
+				m.Get("/tree", repo.GetTree)
 				m.Get("/forks", repo.ListForks)
+				m.Get("/diff/:sha", repo.GetDiff)
 				m.Group("/branches", func() {
 					m.Get("", repo.ListBranches)
 					m.Get("/*", repo.GetBranch)
@@ -320,7 +322,7 @@ func RegisterRoutes(m *macaron.Macaron) {
 
 		m.Get("/users/:username/orgs", org.ListUserOrgs)
 		m.Group("/orgs/:orgname", func() {
-			m.Combo("").Get(org.Get).Patch(bind(api.EditOrgOption{}), org.Edit)
+			m.Combo("").Get(org.Get).Patch(bind(api.EditOrgOption{}), org.Edit).Delete(admin.DeleteOrg)
 			m.Combo("/teams").Get(org.ListTeams)
 		}, orgAssignment(true))
 
