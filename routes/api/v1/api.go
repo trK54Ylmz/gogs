@@ -332,6 +332,8 @@ func RegisterRoutes(m *macaron.Macaron) {
 			c.Error(404)
 		})
 
+
+
 		m.Group("/admin", func() {
 			m.Group("/users", func() {
 				m.Post("", bind(api.CreateUserOption{}), admin.CreateUser)
