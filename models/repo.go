@@ -2340,18 +2340,18 @@ func (repo *Repository) GetForks() ([]*Repository, error) {
 
 type TreeFile struct {
 	Name         string `json:"name"`
-	LastCommitId string `json:"commit_id"`
-	IsDir        bool `json:"is_dir"`
+	LastCommitId string `json:"commitId"`
+	IsDir        bool `json:"isDir"`
 	Size         int64 `json:"size"`
 }
 
 type Tree struct {
-	LastCommitId  string `json:"last_commit_id"`
-	LastCommitMsg string `json:"last_commit_msg"`
+	LastCommitId  string `json:"lastCommitId"`
+	LastCommitMsg string `json:"lastCommitMsg"`
 	Files         []TreeFile `json:"files"`
 	Readme        string `json:"readme"`
-	ReadmeName    string `json:"readme_name"`
-	IsReadmeText  bool `json:"is_readme_text"`
+	ReadmeName    string `json:"readmeName"`
+	IsReadmeText  bool `json:"isReadmeText"`
 }
 
 // __________                             .__
