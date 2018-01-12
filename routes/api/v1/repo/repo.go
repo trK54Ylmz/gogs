@@ -498,7 +498,7 @@ func GetTree(c *context.APIContext) {
 	// or of directory if not in root directory.
 	latestCommit := commit
 	if len(treePath) > 0 {
-		latestCommit, err = commit.GetCommitByPath(c.Repo.TreePath)
+		latestCommit, err = commit.GetCommitByPath(treePath)
 		if err != nil {
 			c.ServerError("GetCommitByPath", err)
 			return
@@ -510,3 +510,4 @@ func GetTree(c *context.APIContext) {
 
 	c.JSON(202, &model)
 }
+
