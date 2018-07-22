@@ -2352,7 +2352,7 @@ func (repo *Repository) GetForks() ([]*Repository, error) {
 type TreeFile struct {
 	Name         string `json:"name"`
 	LastCommitId string `json:"commit_id"`
-	IsDir        bool   `json:"isDir"`
+	IsDir        bool   `json:"is_dir"`
 	Size         int64  `json:"size"`
 }
 
